@@ -3,7 +3,7 @@
 """
 Usage:
     webup serve
-    webup content <data>
+    webup content [<data>]
 """
 
 import json
@@ -32,7 +32,7 @@ class Controller(object):
 def main(argv):
     if argv['content']:
         data = argv['<data>']
-        if data == '-':
+        if data is None:
             data = sys.stdin.read()
         Controller().content(data)
         return

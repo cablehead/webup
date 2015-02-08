@@ -10,7 +10,7 @@ var WS = (function(api) {
 
 		conn.onclose = function() {
 			console.log('closed');
-			setTimeout(reconnect(), 1000);
+			setTimeout(reconnect, 3000);
 		};
 
 		conn.onmessage = function(e) {
