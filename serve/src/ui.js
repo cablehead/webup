@@ -43,10 +43,15 @@ var Row = React.createClass({
 
 var Panel = React.createClass({
   render: function() {
+	  var html = hljs.highlightAuto(this.props.panel).value;
     return (
 			<div className="panel panel-default">
 				<div className="panel-body">
-					{this.props.panel}
+					<pre>
+					<code>
+					<span dangerouslySetInnerHTML={{__html: html}} />
+					</code>
+					</pre>
 				</div>
 			</div>
     );

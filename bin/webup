@@ -31,7 +31,10 @@ class Controller(object):
 
 def main(argv):
     if argv['content']:
-        Controller().content(argv['<data>'])
+        data = argv['<data>']
+        if data == '-':
+            data = sys.stdin.read()
+        Controller().content(data)
         return
 
     if argv['serve']:
