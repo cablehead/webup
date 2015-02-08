@@ -54,6 +54,6 @@ var Panel = React.createClass({
 });
 
 
-React.render(
+var layout = React.render(
   <Layout rows={rows} />, document.body
 );

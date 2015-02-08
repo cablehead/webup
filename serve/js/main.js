@@ -33,7 +33,8 @@ var WS = (function(api) {
 
 
 var ws = WS({
-	play: function (options) {
-		console.log(options);
+	content: function (options) {
+		rows[1][0] = options.data;
+		layout.setProps({rows: rows});
 	},
 });

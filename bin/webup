@@ -3,8 +3,10 @@
 """
 Usage:
     webup serve
+    webup content <data>
 """
 
+import json
 import sys
 
 import docopt
@@ -12,9 +14,54 @@ import docopt
 import vanilla
 
 
+import logging
+logging.basicConfig()
+
+
+class Controller(object):
+    def __init__(self):
+        h = vanilla.Hub()
+        self.conn = h.tcp.connect(host='localhost', port=10080)
+
+    def __getattr__(self, name):
+        def f(*a, **kw):
+            self.conn.send(json.dumps((name, a, kw)))
+        return f
+
+
 def main(argv):
+    if argv['content']:
+        Controller().content(argv['<data>'])
+        return
+
     if argv['serve']:
         h = vanilla.Hub()
+
+        class API(object):
+            def __init__(self):
+                self.q = []
+                self.controller = h.router()
+                self.commands = h.broadcast()
+
+                @h.spawn
+                def _():
+                    for data in self.controller.recver:
+                        print data
+                        name, a, kw = json.loads(data)
+                        getattr(self, name)(*a, **kw)
+
+            def content(self, data):
+                data = json.dumps(['content', {'data': data}])
+                self.commands.send(data)
+
+        api = API()
+
+        serve = h.tcp.listen(host='localhost', port=10080)
+
+        @serve.consume
+        def _(conn):
+            api.controller.send(conn.recv())
+            conn.close()
 
         b = h.bean(host='0.0.0.0', port=8080)
 
@@ -24,9 +71,13 @@ def main(argv):
         b.static('/build', 'serve/build')
 
         @b.websocket('/')
-        def echo(ws):
-            while True:
-                ws.send(ws.recv())
+        def _(ws):
+            ws.pipe(api.controller)
+            commands = api.commands.subscribe()
+            for command in commands:
+                ws.send(command)
+
+        print 'listening on on http://0.0.0.0:8080'
 
         h.stop_on_term()
 
