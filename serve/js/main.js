@@ -34,8 +34,12 @@ var WS = (function(api) {
 
 var ws = WS({
 	put: function (options) {
-		panels[0] = options.data;
+		panels[current] = options.data;
 		layout.setProps({panels: panels});
-		setTimeout(function(){$('#container').packery()}, 50);
+	},
+	split: function (options) {
+        panels.push(options.data);
+        current += 1;
+		layout.setProps({panels: panels});
 	},
 });

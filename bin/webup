@@ -5,6 +5,7 @@ Usage:
     webup serve
     webup get
     webup put [<data>]
+    webup split [<data>]
 """
 
 import json
@@ -42,6 +43,13 @@ def main(argv):
         Controller().put(data)
         return
 
+    if argv['split']:
+        data = argv['<data>']
+        if data is None:
+            data = sys.stdin.read()
+        Controller().split(data)
+        return
+
     if argv['get']:
         print Controller().get()
         return
@@ -53,15 +61,23 @@ def main(argv):
             def __init__(self):
                 self.q = []
                 self.commands = h.broadcast()
-                self.data = 'initial'
+
+                self.panels = ['initial']
+                self.current = 0
 
             def put(self, data):
-                self.data = data
+                self.panels[self.current] = data
                 data = json.dumps(['put', {'data': data}])
                 self.commands.send(data)
 
+            def split(self, data):
+                self.panels.append(data)
+                self.current += 1
+                data = json.dumps(['split', {'data': data}])
+                self.commands.send(data)
+
             def get(self):
-                return self.data
+                return self.panels[self.current]
 
 
         api = API()

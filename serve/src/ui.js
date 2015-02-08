@@ -1,5 +1,6 @@
 
 var panels = ['initial'];
+var current = 0;
 
 
 var Layout = React.createClass({
