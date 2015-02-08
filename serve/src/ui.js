@@ -1,39 +1,21 @@
 
-var rows = [
-	['foo', 'bar', 'third'],
-	['bottom'],
-];
+var panels = ['foo', 'bar', 'third'];
 
 
 var Layout = React.createClass({
+	mixins: [PackeryMixin('container', {
+		// columnWidth: '.item',
+		// rowHeight: 20,
+		})],
+
   render: function() {
-    var rows = this.props.rows.map(function(row) {
+    var panels = this.props.panels.map(function(panel) {
       return (
-        <Row row={row} />
+        <Panel panel={panel} />
       );
     });
     return (
-			<div className="container-fluid">
-				{rows}
-			</div>
-    );
-  }
-});
-
-
-var Row = React.createClass({
-  render: function() {
-		var width = 12 / this.props.row.length;
-		var className = "col-md-"+width;
-    var panels = this.props.row.map(function(panel) {
-      return (
-				<div className={className}>
-					<Panel panel={panel} />
-				</div>
-      );
-    });
-    return (
-			<div className="row">
+			<div ref="container">
 				{panels}
 			</div>
     );
@@ -45,20 +27,16 @@ var Panel = React.createClass({
   render: function() {
 	  var html = hljs.highlightAuto(this.props.panel).value;
     return (
-			<div className="panel panel-default">
-				<div className="panel-body">
+			<div className="item">
 					<pre>
 					<code>
 					<span dangerouslySetInnerHTML={{__html: html}} />
 					</code>
 					</pre>
-				</div>
 			</div>
     );
   }
 });
 
 
-var layout = React.render(
-  <Layout rows={rows} />, document.body
-);
+var layout = React.render(<Layout panels={panels} />, document.body);
