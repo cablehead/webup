@@ -1,5 +1,5 @@
 
-var panels = ['foo', 'bar', 'third'];
+var panels = ['initial'];
 
 
 var Layout = React.createClass({

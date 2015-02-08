@@ -3,7 +3,8 @@
 """
 Usage:
     webup serve
-    webup content [<data>]
+    webup get
+    webup put [<data>]
 """
 
 import json
@@ -26,15 +27,23 @@ class Controller(object):
     def __getattr__(self, name):
         def f(*a, **kw):
             self.conn.send(json.dumps((name, a, kw)))
+            try:
+                return self.conn.recv()
+            except vanilla.Closed:
+                return None
         return f
 
 
 def main(argv):
-    if argv['content']:
+    if argv['put']:
         data = argv['<data>']
         if data is None:
             data = sys.stdin.read()
-        Controller().content(data)
+        Controller().put(data)
+        return
+
+    if argv['get']:
+        print Controller().get()
         return
 
     if argv['serve']:
@@ -43,19 +52,17 @@ def main(argv):
         class API(object):
             def __init__(self):
                 self.q = []
-                self.controller = h.router()
                 self.commands = h.broadcast()
+                self.data = 'initial'
 
-                @h.spawn
-                def _():
-                    for data in self.controller.recver:
-                        print data
-                        name, a, kw = json.loads(data)
-                        getattr(self, name)(*a, **kw)
-
-            def content(self, data):
-                data = json.dumps(['content', {'data': data}])
+            def put(self, data):
+                self.data = data
+                data = json.dumps(['put', {'data': data}])
                 self.commands.send(data)
+
+            def get(self):
+                return self.data
+
 
         api = API()
 
@@ -63,7 +70,11 @@ def main(argv):
 
         @serve.consume
         def _(conn):
-            api.controller.send(conn.recv())
+            data = conn.recv()
+            name, a, kw = json.loads(data)
+            ret = getattr(api, name)(*a, **kw)
+            if ret is not None:
+                conn.send(ret)
             conn.close()
 
         b = h.bean(host='0.0.0.0', port=8080)
@@ -75,7 +86,6 @@ def main(argv):
 
         @b.websocket('/')
         def _(ws):
-            ws.pipe(api.controller)
             commands = api.commands.subscribe()
             for command in commands:
                 ws.send(command)

@@ -33,7 +33,7 @@ var WS = (function(api) {
 
 
 var ws = WS({
-	content: function (options) {
+	put: function (options) {
 		panels[0] = options.data;
 		layout.setProps({panels: panels});
 		setTimeout(function(){$('#container').packery()}, 50);
