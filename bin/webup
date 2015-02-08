@@ -21,6 +21,7 @@ def main(argv):
         b.static('/', 'serve/index.html')
         b.static('/css', 'serve/css')
         b.static('/js', 'serve/js')
+        b.static('/build', 'serve/build')
 
         @b.websocket('/')
         def echo(ws):
