@@ -1,5 +1,3 @@
-var debug;
-
 function PackeryMixin(reference, options) {
   return {
     packery: false,
@@ -50,16 +48,14 @@ function PackeryMixin(reference, options) {
 
       if (diff.removed.length > 0) {
         this.packery.remove(diff.removed);
-        this.packery.reloadItems();
       }
 
       if (diff.added.length > 0) {
-        debug = diff.added;
+        this.packery.addItems(diff.added);
         diff.added.map(function(toadd) {
           var draggie = new Draggabilly(toadd);
           this.packery.bindDraggabillyEvents(draggie);
         }, this);
-        this.packery.appended(diff.added);
       }
 
       if (diff.moved.length > 0) {
